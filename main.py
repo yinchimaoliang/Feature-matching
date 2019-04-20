@@ -1,37 +1,42 @@
 import cv2 as cv
+import math
 import numpy as np
 
 
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/b.jpg'
+RADIUS = 5
+
+
 
 class main():
     def __init__(self):
         self.img1 = cv.imread(IMAGE_PATH1)
         self.img2 = cv.imread(IMAGE_PATH2)
+        self.img1 = cv.copyMakeBorder(self.img1,RADIUS,RADIUS,RADIUS,RADIUS,cv.BORDER_REPLICATE)
+        self.img2 = cv.copyMakeBorder(self.img2, RADIUS, RADIUS, RADIUS, RADIUS, cv.BORDER_REPLICATE)
+        print(self.img1.shape)
+
+    def findCircle(self,x,y,r):
+        result = []
+        for i in range(x - r,x + r):
+            for j in range(y - r,y + r):
+                dist = math.sqrt((i - x) ** 2 + (j - y) ** 2)
+                if dist >= r and dist < r + 1:
+                    result.append([i,j])
+
+        return result
+
+
+
+    def myORB(self):
+
+        pass
 
     def mainMethod(self):
-
-        # -- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
-        detector = cv.ORB_create()
-
-        keypoints1, descriptors1 = detector.detectAndCompute(self.img1, None)
-        keypoints2, descriptors2 = detector.detectAndCompute(self.img2, None)
-
-        # -- Step 2: Matching descriptor vectors with a brute force matcher
-        matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
-        matches = matcher.match(descriptors1, descriptors2)
-
-        # Sort matches in the order of their distances
-        matches = sorted(matches, key=lambda x: x.distance)
-        # -- Draw matches
-        img_matches = np.empty((max(self.img1.shape[0], self.img2.shape[0]), self.img1.shape[1] + self.img2.shape[1], 3), dtype=np.uint8)
-        cv.drawMatches(self.img1, keypoints1, self.img2, keypoints2, matches[:10], img_matches)
-
-        # -- Show detected matches
-        cv.imshow('Matches', img_matches)
-        cv.waitKey(0)
-
+        print(self.findCircle(5,6,RADIUS))
+        # cv.imshow("test",self.img2)
+        # cv.waitKey()
 
 if __name__ == '__main__':
     a = main()
