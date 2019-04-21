@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 
-IMAGE_PATH1 = './images/a.jpg'
+IMAGE_PATH1 = './images/b.jpg'
 IMAGE_PATH2 = './images/b.jpg'
 RADIUS = 5
 THRESHOLD = 50
@@ -16,7 +16,7 @@ class main():
         self.img1_height = self.img1.shape[0]
         self.img1_width = self.img1.shape[1]
         self.img2_height = self.img2.shape[0]
-        self.img1_width = self.img2.shape[1]
+        self.img2_width = self.img2.shape[1]
         self.img1 = cv.copyMakeBorder(self.img1,RADIUS,RADIUS,RADIUS,RADIUS,cv.BORDER_REPLICATE)
         # print(self.img1.shape)
         self.img2 = cv.copyMakeBorder(self.img2, RADIUS, RADIUS, RADIUS, RADIUS, cv.BORDER_REPLICATE)
@@ -53,22 +53,40 @@ class main():
         for i in range(height):
             for j in range(width):
                 feature = ''
+                max_num = 0
+                max_val = 0
                 for k in range(len(cand)):
-                    if abs(img[i + r][j + r] - img[cand[k][0] + i][cand[k][1] + j]) < THRESHOLD:
+                    val = abs(img[i + r][j + r] - img[cand[k][0] + i][cand[k][1] + j])
+                    if val < THRESHOLD:
                         feature += '0'
                     else:
                         feature += '1'
-
+                    if val > max_val:
+                        max_val = val
+                        max_num = k
+                feature = feature[max_num:] + feature[:max_num]
                 # print(feature)
                 if img_no == 1:
                     self.img1_features[i * width+ j] = feature
                 else:
                     self.img2_features[i * width+ j] = feature
+
+
+    def matching(self):
+        self.img1_sims = []
+        for i in range(len(self.img1_features)):
+            if i % 100 == 0:
+                print("finish %d points" % (i))
+            if self.img1_features[i] in self.img2_features:
+                self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
+        print(self.img1_sims)
     def mainMethod(self):
         # print(self.findCircle(5,6,RADIUS))
         # cv.imshow("test",self.img2)
         # cv.waitKey()
         self.myORB(1,RADIUS)
+        self.myORB(2,RADIUS)
+        self.matching()
 
 if __name__ == '__main__':
     a = main()
