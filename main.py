@@ -3,11 +3,11 @@ import math
 import numpy as np
 
 
-IMAGE_PATH1 = './images/b.jpg'
-IMAGE_PATH2 = './images/b.jpg'
-RADIUS = 5
-THRESHOLD = 50
-
+IMAGE_PATH1 = './images/a.jpg'
+IMAGE_PATH2 = './images/c.jpg'
+RADIUS = 15
+THRESHOLD_LOW = 30
+THRESHOLD_HIGH = 60
 
 class main():
     def __init__(self):
@@ -57,10 +57,13 @@ class main():
                 max_val = 0
                 for k in range(len(cand)):
                     val = abs(img[i + r][j + r] - img[cand[k][0] + i][cand[k][1] + j])
-                    if val < THRESHOLD:
+                    if val < THRESHOLD_LOW:
                         feature += '0'
                     else:
-                        feature += '1'
+                        if val < THRESHOLD_HIGH:
+                            feature += '1'
+                        else:
+                            feature += '2'
                     if val > max_val:
                         max_val = val
                         max_num = k
