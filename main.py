@@ -12,7 +12,9 @@ THRESHOLD_HIGH = 100
 class main():
     def __init__(self):
         self.img1 = cv.imread(IMAGE_PATH1)
+        self.img1 = cv.GaussianBlur(self.img1,(3,3),1.5)
         self.img2 = cv.imread(IMAGE_PATH2)
+        self.img2 = cv.GaussianBlur(self.img2,(3,3),1.5)
         self.img1_height = self.img1.shape[0]
         self.img1_width = self.img1.shape[1]
         self.img2_height = self.img2.shape[0]
@@ -80,15 +82,18 @@ class main():
 
     def matching(self):
         self.img1_sims = []
+        count = 0
         for i in range(len(self.img1_features)):
-            if i % 100 == 0:
+            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num / 2:
+                count += 1
+            if i % 1000 == 0:
                 print("finish %d points" % (i))
             if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num / 2 and self.img1_features[i] in self.img2_features:
                 img2_index = self.img2_features.index(self.img1_features[i])
                 self.matching_table.append([[int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width],[int(img2_index / self.img2_width),img2_index - int(img2_index / self.img2_width) * self.img2_width]])
                 self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
         print(len(self.img1_sims))
-
+        print(count)
 
     def show(self):
         img1 = cv.imread(IMAGE_PATH1)
