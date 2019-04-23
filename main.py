@@ -5,9 +5,9 @@ import numpy as np
 
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/c.jpg'
-RADIUS = 15
-THRESHOLD_LOW = 30
-THRESHOLD_HIGH = 60
+RADIUS = 10
+THRESHOLD_LOW = 50
+THRESHOLD_HIGH = 100
 
 class main():
     def __init__(self):
@@ -23,6 +23,8 @@ class main():
 
         self.img1_features = [None for i in range(self.img1_height * self.img1_width)]
         self.img2_features = [None for i in range(self.img2_height * self.img2_height)]
+
+        self.matching_table = []
 
     def findCircle(self,x,y,r):
         result = []
@@ -80,9 +82,29 @@ class main():
         for i in range(len(self.img1_features)):
             if i % 100 == 0:
                 print("finish %d points" % (i))
-            if self.img1_features[i] in self.img2_features:
+            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > 3 * RADIUS and self.img1_features[i] in self.img2_features:
+                img2_index = self.img2_features.index(self.img1_features[i])
+                self.matching_table.append([[int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width],[int(img2_index / self.img2_width),img2_index - int(img2_index / self.img2_width) * self.img2_width]])
                 self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
-        print(self.img1_sims)
+        print(len(self.img1_sims))
+
+
+    def show(self):
+        img1 = cv.imread(IMAGE_PATH1)
+        img2 = cv.imread(IMAGE_PATH2)
+        img_matches = np.empty(
+            (max(img1.shape[0], img2.shape[0]), img1.shape[1] + img2.shape[1], 3), dtype=np.uint8)
+
+        img_matches[:img1.shape[0], :img1.shape[1]] = img1
+        img_matches[:img2.shape[0], img1.shape[1]:img1.shape[1] + img2.shape[1]] = img2
+
+        for i in self.matching_table:
+            cv.circle(img_matches,(i[0][0],i[0][1]),5,(0,255,255))
+
+        cv.imshow("result",img_matches)
+        cv.waitKey()
+
+
     def mainMethod(self):
         # print(self.findCircle(5,6,RADIUS))
         # cv.imshow("test",self.img2)
@@ -90,6 +112,7 @@ class main():
         self.myORB(1,RADIUS)
         self.myORB(2,RADIUS)
         self.matching()
+        self.show()
 
 if __name__ == '__main__':
     a = main()

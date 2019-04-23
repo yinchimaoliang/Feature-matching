@@ -3,7 +3,7 @@ import numpy as np
 
 
 IMAGE_PATH1 = './images/a.jpg'
-IMAGE_PATH2 = './images/b.jpg'
+IMAGE_PATH2 = './images/c.jpg'
 
 class main():
     def __init__(self):
@@ -16,12 +16,14 @@ class main():
         detector = cv.ORB_create()
 
         keypoints1, descriptors1 = detector.detectAndCompute(self.img1, None)
+        print(keypoints1)
+        print(descriptors1)
         keypoints2, descriptors2 = detector.detectAndCompute(self.img2, None)
 
         # -- Step 2: Matching descriptor vectors with a brute force matcher
         matcher = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
         matches = matcher.match(descriptors1, descriptors2)
-
+        print(matches)
         # Sort matches in the order of their distances
         matches = sorted(matches, key=lambda x: x.distance)
         # -- Draw matches
