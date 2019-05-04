@@ -5,8 +5,9 @@ import numpy as np
 
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/b.jpg'
-RADIUS = 3
+RADIUS = 7
 THRESHOLD = 100
+CONTINUS = 0.7
 
 class main():
     def __init__(self):
@@ -22,15 +23,17 @@ class main():
         # print(self.img1.shape)
         self.img2 = cv.copyMakeBorder(self.img2, RADIUS, RADIUS, RADIUS, RADIUS, cv.BORDER_REPLICATE)
 
-        self.img1_features = [None for i in range(self.img1_height * self.img1_width)]
-        self.img2_features = [None for i in range(self.img2_height * self.img2_height)]
+        self.img1_points = []
+        self.img2_points = []
+        self.img1_features = []
+        self.img2_features = []
 
         self.matching_table = []
 
     def findCircle(self,x,y,r):
         result = []
-        for i in range(x - r,x + r):
-            for j in range(y - r,y + r):
+        for i in range(x - r,x + r + 1):
+            for j in range(y - r,y + r + 1):
                 dist = math.sqrt((i - x) ** 2 + (j - y) ** 2)
                 if dist >= r and dist < r + 1:
                     result.append([i,j])
@@ -69,11 +72,31 @@ class main():
                         max_val = val
                         max_num = k
                 feature = feature[max_num:] + feature[:max_num]
-                # print(feature)
+                # 如果连续是1的个数到达阈值，则将其定义为角点
                 if img_no == 1:
-                    self.img1_features[i * width+ j] = feature
+                    constant = 0
+                    for k in range(2 * self.feature_num):
+                        if constant > CONTINUS * self.feature_num:
+                            self.img1_points.append([i,j])
+                            self.img1_features.append(feature)
+                            break
+
+                        if feature[k % self.feature_num] == '1':
+                            constant += 1
+                        else:
+                            constant = 0
                 else:
-                    self.img2_features[i * width+ j] = feature
+                    constant = 0
+                    for k in range(1 * self.feature_num):
+                        if constant > CONTINUS * self.feature_num:
+                            self.img2_points.append([i, j])
+                            self.img2_features.append(feature)
+                            break
+
+                        if feature[k % self.feature_num] == '1':
+                            constant += 1
+                        else:
+                            constant = 0
 
 
     def matching(self):
@@ -107,6 +130,19 @@ class main():
         cv.imshow("result",img_matches)
         cv.waitKey()
 
+    def temp(self):
+        img1 = cv.imread(IMAGE_PATH1)
+        img2 = cv.imread(IMAGE_PATH2)
+        img_matches = np.empty(
+            (max(img1.shape[0], img2.shape[0]), img1.shape[1] + img2.shape[1], 3), dtype=np.uint8)
+        img_matches[:img1.shape[0], :img1.shape[1]] = img1
+        img_matches[:img2.shape[0], img1.shape[1]:img1.shape[1] + img2.shape[1]] = img2
+
+        for i in range(len(self.img1_features)):
+            cv.circle(img_matches,(self.img1_points[i][1],self.img1_points[i][0]),3,(0,255,255))
+
+        cv.imshow("result",img_matches)
+        cv.waitKey()
 
     def mainMethod(self):
         # print(self.findCircle(5,6,RADIUS))
@@ -114,8 +150,10 @@ class main():
         # cv.waitKey()
         self.myORB(1,RADIUS)
         self.myORB(2,RADIUS)
-        self.matching()
-        self.show()
+        print(len(self.img1_features))
+        self.temp()
+        # self.matching()
+        # self.show()
 
 if __name__ == '__main__':
     a = main()
