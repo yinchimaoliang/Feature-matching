@@ -5,9 +5,8 @@ import numpy as np
 
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/b.jpg'
-RADIUS = 20
-THRESHOLD_LOW = 100
-THRESHOLD_HIGH = 200
+RADIUS = 3
+THRESHOLD = 100
 
 class main():
     def __init__(self):
@@ -39,7 +38,6 @@ class main():
         return result
 
 
-
     def myORB(self,img_no,r):
         if img_no == 1:
             img = self.img1
@@ -63,13 +61,10 @@ class main():
                 max_val = 0
                 for k in range(len(cand)):
                     val = abs(img[i + r][j + r] - img[cand[k][0] + i][cand[k][1] + j])
-                    if val < THRESHOLD_LOW:
+                    if val < THRESHOLD:
                         feature += '0'
                     else:
-                        if val < THRESHOLD_HIGH:
-                            feature += '1'
-                        else:
-                            feature += '2'
+                        feature += '1'
                     if val > max_val:
                         max_val = val
                         max_num = k
@@ -85,11 +80,11 @@ class main():
         self.img1_sims = []
         count = 0
         for i in range(len(self.img1_features)):
-            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num:
+            if self.img1_features[i].count('1') > 0.9 * self.feature_num:
                 count += 1
             if i % 1000 == 0:
                 print("finish %d points" % (i))
-            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num  and self.img1_features[i] in self.img2_features:
+            if self.img1_features[i].count('1') > self.feature_num * 0.9 and self.img1_features[i] in  self.img2_features:
                 img2_index = self.img2_features.index(self.img1_features[i])
                 self.matching_table.append([[int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width],[int(img2_index / self.img2_width),img2_index - int(img2_index / self.img2_width) * self.img2_width]])
                 self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
@@ -108,7 +103,7 @@ class main():
         for i in self.matching_table:
             cv.circle(img_matches,(i[0][1],i[0][0]),3,(0,255,255))
             cv.circle(img_matches,(img1.shape[1] + i[1][1],i[1][0]),3,(0,255,255))
-            # cv.line(img_matches,(i[0][1],i[0][0]),(img1.shape[1] + i[1][1],i[1][0]),(0,0,255))
+            cv.line(img_matches,(i[0][1],i[0][0]),(img1.shape[1] + i[1][1],i[1][0]),(0,0,255))
         cv.imshow("result",img_matches)
         cv.waitKey()
 
