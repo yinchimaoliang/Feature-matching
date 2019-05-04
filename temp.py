@@ -3,7 +3,7 @@ import numpy as np
 
 
 IMAGE_PATH1 = './images/a.jpg'
-IMAGE_PATH2 = './images/c.jpg'
+IMAGE_PATH2 = './images/b.jpg'
 
 class main():
     def __init__(self):

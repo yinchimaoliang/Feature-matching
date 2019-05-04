@@ -6,8 +6,8 @@ import numpy as np
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/b.jpg'
 RADIUS = 20
-THRESHOLD_LOW = 50
-THRESHOLD_HIGH = 100
+THRESHOLD_LOW = 100
+THRESHOLD_HIGH = 200
 
 class main():
     def __init__(self):
@@ -54,6 +54,7 @@ class main():
         print(img.shape)
         cv.waitKey()
         cand = self.findCircle(r, r, r)
+        print(cand)
         self.feature_num = len(cand)
         for i in range(height):
             for j in range(width):
@@ -84,11 +85,11 @@ class main():
         self.img1_sims = []
         count = 0
         for i in range(len(self.img1_features)):
-            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num / 2:
+            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num:
                 count += 1
             if i % 1000 == 0:
                 print("finish %d points" % (i))
-            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num / 2 and self.img1_features[i] in self.img2_features:
+            if self.img1_features[i].count('1') + 2 * self.img1_features[i].count('2') > self.feature_num  and self.img1_features[i] in self.img2_features:
                 img2_index = self.img2_features.index(self.img1_features[i])
                 self.matching_table.append([[int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width],[int(img2_index / self.img2_width),img2_index - int(img2_index / self.img2_width) * self.img2_width]])
                 self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
@@ -107,7 +108,7 @@ class main():
         for i in self.matching_table:
             cv.circle(img_matches,(i[0][1],i[0][0]),3,(0,255,255))
             cv.circle(img_matches,(img1.shape[1] + i[1][1],i[1][0]),3,(0,255,255))
-            cv.line(img_matches,(i[0][1],i[0][0]),(img1.shape[1] + i[1][1],i[1][0]),(0,0,255))
+            # cv.line(img_matches,(i[0][1],i[0][0]),(img1.shape[1] + i[1][1],i[1][0]),(0,0,255))
         cv.imshow("result",img_matches)
         cv.waitKey()
 
