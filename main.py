@@ -5,7 +5,7 @@ import numpy as np
 
 IMAGE_PATH1 = './images/a.jpg'
 IMAGE_PATH2 = './images/b.jpg'
-RADIUS = 7
+RADIUS = 4
 THRESHOLD = 100
 CONTINUS = 0.7
 
@@ -57,8 +57,13 @@ class main():
         cand = self.findCircle(r, r, r)
         print(cand)
         self.feature_num = len(cand)
+        forbidden_list = []
         for i in range(height):
             for j in range(width):
+                # print([i,j],forbidden_list)
+                if [i,j] in forbidden_list:
+                    print('t')
+                    continue
                 feature = ''
                 max_num = 0
                 max_val = 0
@@ -79,7 +84,11 @@ class main():
                         if constant > CONTINUS * self.feature_num:
                             self.img1_points.append([i,j])
                             self.img1_features.append(feature)
+                            for m in range(-RADIUS,RADIUS + 1):
+                                for n in range(-RADIUS,RADIUS + 1):
+                                    forbidden_list.append([i + m,j + n])
                             break
+
 
                         if feature[k % self.feature_num] == '1':
                             constant += 1
@@ -91,6 +100,9 @@ class main():
                         if constant > CONTINUS * self.feature_num:
                             self.img2_points.append([i, j])
                             self.img2_features.append(feature)
+                            for m in range(RADIUS + 1):
+                                for n in range(RADIUS + 1):
+                                    forbidden_list.append([i + m,j + n])
                             break
 
                         if feature[k % self.feature_num] == '1':
@@ -149,7 +161,7 @@ class main():
         # cv.imshow("test",self.img2)
         # cv.waitKey()
         self.myORB(1,RADIUS)
-        self.myORB(2,RADIUS)
+        # self.myORB(2,RADIUS)
         print(len(self.img1_features))
         self.temp()
         # self.matching()
