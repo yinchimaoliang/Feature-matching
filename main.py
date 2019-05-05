@@ -5,7 +5,7 @@ import numpy as np
 
 IMAGE_PATH1 = './images/d.jpg'
 IMAGE_PATH2 = './images/e.jpg'
-RADIUS = 4
+RADIUS = 5
 THRESHOLD = 100
 CONTINUS = 0.7
 GAUSSIAN_RADIUS = 5
@@ -14,6 +14,7 @@ GAUSSIAN_SIGMA = 2
 class main():
     def __init__(self):
         self.img1 = cv.imread(IMAGE_PATH1)
+        #高斯滤波
         self.img1 = cv.GaussianBlur(self.img1,(GAUSSIAN_RADIUS,GAUSSIAN_RADIUS),GAUSSIAN_SIGMA)
         self.img2 = cv.imread(IMAGE_PATH2)
         self.img2 = cv.GaussianBlur(self.img2,(GAUSSIAN_RADIUS,GAUSSIAN_RADIUS),GAUSSIAN_SIGMA)
@@ -21,17 +22,21 @@ class main():
         self.img1_width = self.img1.shape[1]
         self.img2_height = self.img2.shape[0]
         self.img2_width = self.img2.shape[1]
+        #加边界
         self.img1 = cv.copyMakeBorder(self.img1,RADIUS,RADIUS,RADIUS,RADIUS,cv.BORDER_REPLICATE)
         # print(self.img1.shape)
         self.img2 = cv.copyMakeBorder(self.img2, RADIUS, RADIUS, RADIUS, RADIUS, cv.BORDER_REPLICATE)
 
+        #存储角点位置
         self.img1_points = []
         self.img2_points = []
+        #存储角点feature
         self.img1_features = []
         self.img2_features = []
 
         self.matching_table = []
 
+    #通过循环找圆
     def findCircle(self,x,y,r):
         result = []
         for i in range(x - r,x + r + 1):
@@ -43,6 +48,7 @@ class main():
         return result
 
 
+    #ORB操作
     def myORB(self,img_no,r):
         if img_no == 1:
             img = self.img1
@@ -53,7 +59,6 @@ class main():
             height = self.img2_height
             width = self.img2_width
         img = cv.cvtColor(img,cv.COLOR_RGB2GRAY)
-        # cv.imshow("test",img)
         print(img.shape)
         cv.waitKey()
         cand = self.findCircle(r, r, r)
@@ -114,74 +119,41 @@ class main():
 
     #进行特征匹配
     def matching(self):
-
-        img1_points = self.img1_points[:]
-        img1_features = self.img1_features[:]
-        img2_points = self.img2_points[:]
-        img2_features = self.img2_features[:]
-        print(len(img1_features),len(img1_points))
+        print(len(self.img1_features),len(self.img1_points))
         i = 0
         #以img1为基础进行匹配
-        while i < len(img1_features):
-            for j in range(len(img2_features)):
-                if img1_features[i] ^ img2_features[j] == 0:
+        while i < len(self.img1_features):
+            for j in range(len(self.img2_features)):
+                if self.img1_features[i] ^ self.img2_features[j] == 0:
                     #匹配到一点后将其丢弃
-                    self.matching_table.append([img1_points[i],img2_points[j]])
-                    img2_points.pop(j)
-                    img2_features.pop(j)
-                    img1_points.pop(i)
-                    img1_features.pop(i)
+                    self.matching_table.append([self.img1_points[i],self.img2_points[j]])
+                    self.img2_points.pop(j)
+                    self.img2_features.pop(j)
+                    self.img1_points.pop(i)
+                    self.img1_features.pop(i)
                     i -= 1
                     break
 
             i += 1
         i = 0
         # 以img1为基础进行匹配
-        while i < len(img2_features):
-            for j in range(len(img1_features)):
-                if img2_features[i] ^ img1_features[j] == 0:
+        while i < len(self.img2_features):
+            for j in range(len(self.img1_features)):
+                if self.img2_features[i] ^ self.img1_features[j] == 0:
                     # 匹配到一点后将其丢弃
-                    self.matching_table.append([img2_points[i],img1_points[j]])
-                    img1_points.pop(j)
-                    img1_features.pop(j)
-                    img2_points.pop(i)
-                    img2_features.pop(i)
+                    self.matching_table.append([self.img2_points[i],self.img1_points[j]])
+                    self.img1_points.pop(j)
+                    self.img1_features.pop(j)
+                    self.img2_points.pop(i)
+                    self.img2_features.pop(i)
                     i -= 1
                     break
 
             i += 1
         print(len(self.matching_table))
-        # self.img1_sims = []
-        # count = 0
-        # for i in range(len(self.img1_features)):
-        #     if self.img1_features[i].count('1') > 0.9 * self.feature_num:
-        #         count += 1
-        #     if i % 1000 == 0:
-        #         print("finish %d points" % (i))
-        #     if self.img1_features[i].count('1') > self.feature_num * 0.9 and self.img1_features[i] in  self.img2_features:
-        #         img2_index = self.img2_features.index(self.img1_features[i])
-        #         self.matching_table.append([[int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width],[int(img2_index / self.img2_width),img2_index - int(img2_index / self.img2_width) * self.img2_width]])
-        #         self.img1_sims.append([int(i / self.img1_width),i - int(i / self.img1_width) * self.img1_width])
-        # print(len(self.img1_sims))
-        # print(count)
 
+    #显示函数
     def show(self):
-        img1 = cv.imread(IMAGE_PATH1)
-        img2 = cv.imread(IMAGE_PATH2)
-        img_matches = np.empty(
-            (max(img1.shape[0], img2.shape[0]), img1.shape[1] + img2.shape[1], 3), dtype=np.uint8)
-
-        img_matches[:img1.shape[0], :img1.shape[1]] = img1
-        img_matches[:img2.shape[0], img1.shape[1]:img1.shape[1] + img2.shape[1]] = img2
-
-        for i in self.matching_table:
-            cv.circle(img_matches,(i[0][1],i[0][0]),3,(0,255,255))
-            cv.circle(img_matches,(img1.shape[1] + i[1][1],i[1][0]),3,(0,255,255))
-            cv.line(img_matches,(i[0][1],i[0][0]),(img1.shape[1] + i[1][1],i[1][0]),(0,0,255))
-        cv.imshow("result",img_matches)
-        cv.waitKey()
-
-    def temp(self):
         color_table = []
 
         for i in range(0,256,10):
@@ -192,6 +164,7 @@ class main():
         color_num = len(color_table)
         img1 = cv.imread(IMAGE_PATH1)
         img2 = cv.imread(IMAGE_PATH2)
+        #将两张图放在一个框中
         img_matches = np.empty(
             (max(img1.shape[0], img2.shape[0]), img1.shape[1] + img2.shape[1], 3), dtype=np.uint8)
         img_matches[:img1.shape[0], :img1.shape[1]] = img1
@@ -203,21 +176,18 @@ class main():
             cv.circle(img_matches,(img1.shape[1] + self.img2_points[i][1] , self.img2_points[i][0]),3,color_table[i % color_num])
 
         for i in range(len(self.matching_table)):
+            cv.circle(img_matches,(self.matching_table[i][0][1],self.matching_table[i][0][0]),3,color_table[i % color_num])
+            cv.circle(img_matches,(img1.shape[1] + self.matching_table[i][1][1],self.matching_table[i][1][0]),3,color_table[i % color_num])
             cv.line(img_matches,(self.matching_table[i][0][1],self.matching_table[i][0][0]),(img1.shape[1] + self.matching_table[i][1][1],self.matching_table[i][1][0]),color_table[i % color_num])
         cv.imshow("result",img_matches)
         cv.waitKey()
 
     def mainMethod(self):
-        # print(self.findCircle(5,6,RADIUS))
-        # cv.imshow("test",self.img2)
-        # cv.waitKey()
         self.myORB(1,RADIUS)
         self.myORB(2,RADIUS)
         print(len(self.img1_features))
         self.matching()
-        self.temp()
-        # self.matching()
-        # self.show()
+        self.show()
 
 if __name__ == '__main__':
     a = main()
