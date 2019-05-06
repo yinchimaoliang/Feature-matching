@@ -5,10 +5,10 @@ import numpy as np
 
 IMAGE_PATH1 = './images/d.jpg'
 IMAGE_PATH2 = './images/e.jpg'
-RADIUS = 5
-THRESHOLD = 100
-CONTINUS = 0.7
-GAUSSIAN_RADIUS = 5
+RADIUS = 3
+THRESHOLD = 25
+CONTINUS = 0.9
+GAUSSIAN_RADIUS = 9
 GAUSSIAN_SIGMA = 2
 
 class main():
